@@ -31,6 +31,12 @@ const existingTickerArray = (async () => {
   return result;
 })();
 
+cron.schedule("*/30 * * * * *", () => {
+  job1()
+})
+
+const job1 = () => {
+
 existingTickerArray.then((tickers) => {
   let tickerStep = 0;
 
@@ -47,8 +53,12 @@ existingTickerArray.then((tickers) => {
         const result = await res.json();
         console.log("end result", result);
       });
+
+      break when tickerStep = tickers.length 
     });
 
     tickerStep += 1;
   });
 });
+
+}

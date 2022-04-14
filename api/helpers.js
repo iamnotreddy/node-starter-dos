@@ -1,13 +1,10 @@
-// Require Libraries
-
-import cron from "node-cron";
 import fetch from "node-fetch";
-import dotenv from "dotenv";
-dotenv.config();
 
-const GRAPHQL_URL = "https://superb-fawn-16.hasura.app/v1/graphql";
+// --------------------------------------- helper file --------------------------------------------- \\
 
-const FETCH_EXISTING_TICKERS = {
+export const GRAPHQL_URL = "https://superb-fawn-16.hasura.app/v1/graphql";
+
+export const FETCH_EXISTING_TICKERS = {
   queryString: `query fetchExistingTickerTS {
         asset_regular_ts(distinct_on: [ticker], order_by: [{ticker: asc}]) {
             ticker
@@ -16,7 +13,7 @@ const FETCH_EXISTING_TICKERS = {
   operationName: "fetchExistingTickerTS",
 };
 
-const UPSERT_TS_ON_EXISTING_TICKERS = {
+export const UPSERT_TS_ON_EXISTING_TICKERS = {
   queryString: `mutation upsertTimeSeries ($objects: [asset_regular_ts_insert_input!]!) {
     insert_asset_regular_ts(objects: $objects,
       on_conflict: {
@@ -36,7 +33,7 @@ const UPSERT_TS_ON_EXISTING_TICKERS = {
   operationName: "upsertTimeSeries",
 };
 
-// helper functions
+// fetches API response from Alpha Vantage and transforms into a list of objects
 
 export const getStockTimeSeriesAPI = async (stockTicker) => {
   const res = await fetch(
@@ -64,6 +61,8 @@ export const transformStockAPIResponse = (response) => {
     };
   });
 };
+
+// functions to set Hasura API call headers, GQL query and input variables
 
 export const setQueryOptions = (queryObject, transformedObjectArray) => {
   if (transformedObjectArray === undefined) {
@@ -100,57 +99,3 @@ export const setQueryOptions = (queryObject, transformedObjectArray) => {
     return options;
   }
 };
-
-// actual tasks
-
-// const existingTickerArray = (async () => {
-//   const result = await fetch(
-//     GRAPHQL_URL,
-//     setQueryOptions(FETCH_EXISTING_TICKERS)
-//   ).then(async (res) => {
-//     const result = await res.json();
-//     const tickerArray = result.data.asset_regular_ts.map((it) => {
-//       return it.ticker;
-//     });
-//     return tickerArray;
-//   });
-//   return result;
-// })();
-
-// existingTickerArray.then((tickers) => {
-//   let tickerStep = 0;
-
-//   cron.schedule("*/30 * * * * *", () => {
-//     console.log("now updating time series for:", tickers[tickerStep]);
-//     getStockTimeSeriesAPI(tickers[tickerStep]).then((res) => {
-//       const transformedStockResponse = transformStockAPIResponse(res);
-//       console.log('this is what i pass into objects', transformedStockResponse);
-//       fetch(
-//         GRAPHQL_URL,
-//         setQueryOptions(UPSERT_TS_ON_EXISTING_TICKERS, transformedStockResponse)
-//       ).then(async (res) => {
-//         const result = await res.json();
-//         console.log(result);
-//       });
-//     });
-//     tickerStep += 1;
-//   });
-// });
-
-getStockTimeSeriesAPI("AMZN").then((res) => {
-  console.log("raveen reddy", res);
-  fetch(
-    GRAPHQL_URL,
-    setQueryOptions(
-      UPSERT_TS_ON_EXISTING_TICKERS,
-      transformStockAPIResponse(res)
-    )
-  ).then(async (res) => {
-    const result = await res.json();
-    console.log("end result", result);
-  });
-});
-
-// Routes
-
-// Start Server

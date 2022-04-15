@@ -61,3 +61,5 @@ const upsertStockTimeSeriesOnDelay = () => {
 cron.schedule("30 18 * * *", () => {
   upsertStockTimeSeriesOnDelay();
 });
+
+console.log("hello i am raveen");

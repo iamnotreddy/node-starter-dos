@@ -58,6 +58,6 @@ const upsertStockTimeSeriesOnDelay = () => {
 };
 
 // run upsert function every day at midnight
-cron.schedule("0 0 * * *", () => {
+cron.schedule("30 18 * * *", () => {
   upsertStockTimeSeriesOnDelay();
 });

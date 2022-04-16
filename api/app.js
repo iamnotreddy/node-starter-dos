@@ -23,9 +23,7 @@ const existingTickerArray = (async () => {
     setQueryOptions(FETCH_EXISTING_TICKERS)
   ).then(async (res) => {
     const result = await res.json();
-    const tickerArray = result.data.asset_regular_ts.map((it) => {
-      return it.ticker;
-    });
+    const tickerArray = result.data.asset_regular_ts.map((it) => it.ticker);
     return tickerArray;
   });
   return result;
@@ -36,10 +34,12 @@ const existingTickerArray = (async () => {
 const upsertStockTimeSeriesOnDelay = () => {
   existingTickerArray.then((tickers) => {
     for (let i = 0; i < tickers.length; i++) {
+      // delay loop by 30 seconds
       setTimeout(() => {
         console.log(new Date());
         console.log("now updating time series for:", tickers[i]);
         getStockTimeSeriesAPI(tickers[i]).then((res) => {
+          // print first row of response data
           console.log(transformStockAPIResponse(res)[0]);
           fetch(
             GRAPHQL_URL,
@@ -57,9 +57,9 @@ const upsertStockTimeSeriesOnDelay = () => {
   });
 };
 
+upsertStockTimeSeriesOnDelay();
 // run upsert function every day at midnight
-cron.schedule("30 18 * * *", () => {
+cron.schedule("0 0 * * *", () => {
+  console.log("cron is running");
   upsertStockTimeSeriesOnDelay();
 });
-
-console.log("hello i am raveen");
